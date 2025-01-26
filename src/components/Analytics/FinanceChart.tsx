@@ -35,7 +35,7 @@ export function FinanceChart({ currentMonth }: FinanceChartProps) {
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   return (
-    <div className="h-[400px] w-full">
+    <div className="h-[400px]">
       <ResponsiveContainer>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />

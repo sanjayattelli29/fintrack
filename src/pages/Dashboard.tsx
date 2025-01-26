@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { format, subMonths, addMonths } from 'date-fns';
 import { FinanceCalendar } from '../components/Calendar/FinanceCalendar';
 import { EntryForm } from '../components/EntryForm/EntryForm';
@@ -24,13 +24,85 @@ export function Dashboard() {
   const years = Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - 5 + i);
   const months = Array.from({ length: 12 }, (_, i) => new Date(2000, i).toLocaleString('default', { month: 'long' }));
 
+  const lambdaURL = "https://jywn5dep24.execute-api.ap-south-1.amazonaws.com/dev/tasks";
+
+  useEffect(() => {
+    async function fetchDataFromAWS() {
+      try {
+        const response = await fetch(
+          lambdaURL
+        );
+        const data = await response.json();
+
+        console.log("Data fetched from AWS:", data.data);
+
+        // Transform the fetched data into the required format
+        const formattedData = {
+          state: {
+            entries: data.data.reduce((acc, entry) => {
+              acc[entry.date] = entry;
+              return acc;
+            }, {}),
+          },
+          version: 0,
+        };
+
+        // Save the formatted data to localStorage
+        localStorage.setItem('finance-storage', JSON.stringify(formattedData));
+        console.log('Data fetched and saved to localStorage:', formattedData);
+      } catch (error) {
+        console.error('Error fetching data from AWS:', error);
+      }
+    }
+
+    fetchDataFromAWS();
+  }, []);
+
+  // Save data to AWS and update the last saved time dynamically every 30 seconds
+  async function SaveDataToAWS() {
+    try {
+      let data = localStorage.getItem('finance-storage');
+      const parsedData = JSON.parse(data || '{}');
+
+      const response = await fetch(
+        lambdaURL,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            updatedData: Object.values(parsedData.state.entries),
+          }),
+          headers: {
+            'Content-type': 'application/json; charset=UTF-8',
+          },
+        }
+      );
+
+      if (response.ok) {
+        console.log('Data successfully saved to AWS');
+        alert("Saved Successfully");
+      } else {
+        console.error('Failed to save data to AWS:', response.status);
+        alert("Failed to save data to AWS");
+      }
+    } catch (error) {
+      console.error('Error saving data to AWS:', error);
+      alert("Error saving data to AWS");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 sticky top-0 z-10">
+      <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-2xl font-bold">Financial Dashboard</h1>
             <div className="flex items-center space-x-4">
+              <button 
+                onClick={SaveDataToAWS}
+                className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"> 
+                SAVE 
+              </button>
+              
               <ThemeToggle />
               <AccountMenu />
             </div>
@@ -43,7 +115,7 @@ export function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-4 space-y-8">
+      <main className="max-w-7xl mx-auto p-1 mb-5 space-y-8">
         <FinancialOverview currentMonth={currentMonth} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -99,12 +171,12 @@ export function Dashboard() {
               currentMonth={currentMonth}
             />
 
-            <MonthlyOverview />
-
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold mb-4">Financial Overview</h3>
-              <FinanceChart currentMonth={currentMonth} />
-            </div>
+                <h3 className="text-xl font-semibold mb-4">Financial Overview</h3>
+                <FinanceChart currentMonth={currentMonth} />
+              </div>
+
+            
 
             <YearlyAnalysis />
           </div>
@@ -113,12 +185,15 @@ export function Dashboard() {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
               <EntryForm selectedDate={selectedDate} currentMonth={currentMonth} />
             </div>
+
+            <MonthlyOverview />
           </div>
+          
         </div>
       </main>
 
       <Footer />
-      <FinanceBot />
+      {/* <FinanceBot /> */}
     </div>
   );
 }

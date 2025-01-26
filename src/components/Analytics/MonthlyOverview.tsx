@@ -43,7 +43,7 @@ export function MonthlyOverview() {
   const handleNextYear = () => setSelectedYear(addYears(selectedYear, 1));
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+    <div className="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-lg  text-sm">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold">Monthly Overview</h3>
         <div className="flex items-center space-x-4">

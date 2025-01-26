@@ -85,6 +85,7 @@ export function EntryForm({ selectedDate, currentMonth }: EntryFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">
           Entry for {format(selectedDate, 'MMMM d, yyyy')}
@@ -100,7 +101,62 @@ export function EntryForm({ selectedDate, currentMonth }: EntryFormProps) {
         )}
       </div>
 
-      <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+      
+
+      <div>
+        <label className="block text-sm font-medium mb-1">Investment ({profile?.currency || 'USD'})</label>
+        <input
+          type="number"
+          value={investment}
+          onChange={(e) => setInvestment(e.target.value)}
+          className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-gray-100"
+          step="0.01"
+          min="0"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1">Gross Earnings ({profile?.currency || 'USD'})</label>
+        <input
+          type="number"
+          value={earnings}
+          onChange={(e) => setEarnings(e.target.value)}
+          className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-gray-100"
+          step="0.01"
+          min="0"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1">Spending ({profile?.currency || 'USD'})</label>
+        <input
+          type="number"
+          value={spending}
+          onChange={(e) => setSpending(e.target.value)}
+          className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-gray-100"
+          step="0.01"
+          min="0"
+        />
+      </div>
+
+      {Number(earnings) > 0 && (Number(commission) > 0 || Number(tax) > 0) && (
+        <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <p className="text-sm font-medium">Net Earnings after deductions:</p>
+          <p className="text-lg font-bold text-green-600 dark:text-green-400">
+            {formatCurrency(
+              calculateNetEarnings(
+                Number(earnings),
+                Number(commission),
+                Number(tax)
+              ),
+              profile?.currency || 'USD'
+            )}
+          </p>
+        </div>
+      )}
+
+
+<div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
         <div className="flex items-start space-x-2">
           <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
           <div>
@@ -158,58 +214,6 @@ export function EntryForm({ selectedDate, currentMonth }: EntryFormProps) {
           </div>
         </div>
       </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">Investment ({profile?.currency || 'USD'})</label>
-        <input
-          type="number"
-          value={investment}
-          onChange={(e) => setInvestment(e.target.value)}
-          className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-gray-100"
-          step="0.01"
-          min="0"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">Gross Earnings ({profile?.currency || 'USD'})</label>
-        <input
-          type="number"
-          value={earnings}
-          onChange={(e) => setEarnings(e.target.value)}
-          className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-gray-100"
-          step="0.01"
-          min="0"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">Spending ({profile?.currency || 'USD'})</label>
-        <input
-          type="number"
-          value={spending}
-          onChange={(e) => setSpending(e.target.value)}
-          className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-gray-100"
-          step="0.01"
-          min="0"
-        />
-      </div>
-
-      {Number(earnings) > 0 && (Number(commission) > 0 || Number(tax) > 0) && (
-        <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <p className="text-sm font-medium">Net Earnings after deductions:</p>
-          <p className="text-lg font-bold text-green-600 dark:text-green-400">
-            {formatCurrency(
-              calculateNetEarnings(
-                Number(earnings),
-                Number(commission),
-                Number(tax)
-              ),
-              profile?.currency || 'USD'
-            )}
-          </p>
-        </div>
-      )}
 
       <button
         type="submit"
